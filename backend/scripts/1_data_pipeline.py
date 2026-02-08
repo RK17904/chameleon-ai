@@ -15,7 +15,7 @@ DATA_PATH = os.path.join(BASE_DIR, 'data', 'processed')
 os.makedirs(DATA_PATH, exist_ok=True)
 
 # 1. load data
-print("--- STEP 1: Loading Data ---")
+print("---Loading Data ---")
 
 
 raw_data = [
@@ -48,7 +48,7 @@ print(f"Loaded {len(df)} documents.")
 
 
 # 2. embbegings (PyTorch)
-print("\n--- STEP 2: Generating Embeddings (PyTorch) ---")
+print("\n--- Generating Embeddings (PyTorch) ---")
 # downloard the model (apper once)
 embedder = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -59,7 +59,7 @@ print(f"Embeddings shape: {embeddings.shape}")
 
 
 # 3. clustering
-print("\n--- STEP 3: Clustering Data ---")
+print("\n--- Clustering Data ---")
 kmeans = KMeans(n_clusters=3, random_state=42)
 kmeans.fit(embeddings)
 df['cluster'] = kmeans.labels_
@@ -69,7 +69,7 @@ print(df[['text', 'cluster']].sort_values(by='cluster'))
 
 
 # 4. save & plot
-print("\n--- STEP 4: Saving & Plotting ---")
+print("\n--- Saving & Plotting ---")
 
 # save for the next phase
 save_file = os.path.join(DATA_PATH, "clustered_data.pkl")
