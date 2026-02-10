@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 
-// definr the message
+// Define what a message looks like
 interface Message {
   id: number;
   text: string;
   sender: 'user' | 'ai';
-  category?: string; // "Chameleon" color changing
+  category?: string;
 }
 
 export default function App() {
@@ -21,7 +22,7 @@ export default function App() {
     }
   ]);
   
-  // auto scroll to the buttom 
+  // Auto-scroll to bottom
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -31,24 +32,40 @@ export default function App() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // 1. add user message
+    // 1. Add User Message
     const userMessage: Message = { id: Date.now(), text: input, sender: 'user' };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
-    // 2. simulate AI response (connect Python later)
-    setTimeout(() => {
+    try {
+      // 2. CALL THE REAL BACKEND
+      const response = await axios.post('http://localhost:8000/chat', {
+        query: input
+      });
+
+      // 3. Add AI Response
       const aiResponse: Message = { 
         id: Date.now() + 1, 
-        text: "I see you said: " + input + ". (I am currently a dummy UI, connect my brain next!)", 
-        sender: 'ai' 
+        text: response.data.response, 
+        sender: 'ai',
+        category: response.data.topic 
       };
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      console.error("Error connecting to AI:", error);
+      const errorMsg: Message = { 
+        id: Date.now() + 1, 
+        text: "Error: Could not reach the brain. Is the backend server running?", 
+        sender: 'ai' 
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
+  // This is the function that was missing!
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSend();
   };
